@@ -1,4 +1,3 @@
-// Vistas: resources/views/vehiculos/create.blade.php
 @extends('layouts.app')
 
 @section('content')

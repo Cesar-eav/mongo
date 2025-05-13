@@ -38,12 +38,17 @@
             font-weight: bold;
             color: #007bff;
         }
+        .nav-link.active {
+            background-color: rgba(0, 0, 0, 0.1); /* Fondo ligeramente más oscuro para el enlace activo */
+            color: #000; /* Texto en negro para mejor contraste */
+            border-radius: 5px; /* Opcional: para redondear un poco el fondo del enlace activo */
+        }
     </style>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container-fluid">
-            <a class="navbar-brand" href="{{ route('dashboard') }}">RentValpoCar Admin</a>
+            <a class="navbar-brand" href="{{ route('dashboard') }}">RentValpoCar</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -58,7 +63,7 @@
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('vehiculos.create') ? 'active' : '' }}" href="{{ route('vehiculos.create') }}">Ingresar Vehículo</a>
                     </li>
-                     <li class="nav-item">
+                    <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('arriendos.create') ? 'active' : '' }}" href="{{ route('arriendos.create') }}">Ingresar Arriendo</a>
                     </li>
                     <li class="nav-item">
@@ -70,10 +75,10 @@
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('vehiculos.index') ? 'active' : '' }}" href="{{ route('vehiculos.index') }}">Listar Vehículos</a>
                     </li>
-                     <li class="nav-item">
+                    <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('arriendos.index') ? 'active' : '' }}" href="{{ route('arriendos.index') }}">Listar Arriendos</a>
                     </li>
-                    </ul>
+                </ul>
             </div>
         </div>
     </nav>

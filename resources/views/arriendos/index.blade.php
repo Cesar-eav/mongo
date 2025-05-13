@@ -11,6 +11,12 @@
 
     <a href="{{ route('arriendos.create') }}" class="btn btn-primary mb-3">Crear Nuevo Arriendo</a>
 
+     @if (session('error'))
+        <div class="alert alert-danger">
+            {{ session('error') }}
+        </div>
+    @endif
+
     <div class="table-responsive">
         <table class="table table-striped table-bordered">
             <thead>
@@ -26,7 +32,7 @@
                 </tr>
             </thead>
             <tbody>
-                @if ($arriendos->isEmpty())
+                @if (isset($arriendos) && $arriendos->isEmpty())
                     <tr>
                         <td colspan="8" class="text-center">No hay arriendos registrados.</td>
                     </tr>
@@ -34,7 +40,7 @@
                     @foreach ($arriendos as $arriendo)
                         <tr>
                             <td>{{ $arriendo->id_arriendo }}</td>
-                            <td>{{ $arriendo->cliente['nombre'] }} (ID: {{ $arriendo->cliente['id'] }})</td> {{-- Ajustar según la estructura --}}
+                            <td>{{ $arriendo->cliente['nombre'] }} (ID: {{ $arriendo->cliente['id'] }})</td>
                             <td>{{ $arriendo->vehiculo['marca'] }} {{ $arriendo->vehiculo['modelo'] }} (ID: {{ $arriendo->vehiculo['id'] }})</td>
                             <td>{{ $arriendo->fecha_inicio }}</td>
                             <td>{{ $arriendo->fecha_fin }}</td>
@@ -55,4 +61,4 @@
             </tbody>
         </table>
     </div>
-    @endsection
+@endsection

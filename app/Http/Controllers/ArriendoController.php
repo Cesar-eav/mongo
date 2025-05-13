@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Arriendo;
 use Illuminate\Http\Request;
+use MongoDB\Laravel\Eloquent\Model; 
 
 class ArriendoController extends Controller
 {
@@ -21,9 +22,8 @@ class ArriendoController extends Controller
      */
     public function create()
     {
-        // Aquí necesitarías obtener la lista de clientes y vehículos para los selects
-        $clientes = \App\Models\Cliente::all()->toArray(); // Asegúrate de que el modelo Cliente existe
-        $vehiculos = \App\Models\Vehiculo::all()->toArray(); // Asegúrate de que el modelo Vehiculo existe
+        $clientes = \App\Models\Cliente::all();
+        $vehiculos = \App\Models\Vehiculo::all();
         return view('arriendos.create', compact('clientes', 'vehiculos'));
     }
 
@@ -34,16 +34,15 @@ class ArriendoController extends Controller
     {
         $request->validate([
             'id_arriendo' => 'required|integer|unique:arriendos,id_arriendo',
-            'id_cliente' => 'required|integer', // Solo necesitamos el ID, los datos completos los obtenemos aparte.
-            'id_vehiculo' => 'required|integer', // Igual que con el cliente
+            'id_cliente' => 'required|string',
+            'id_vehiculo' => 'required|string',
             'fecha_inicio' => 'required|date|before:fecha_fin',
             'fecha_fin' => 'required|date|after:fecha_inicio',
             'modalidad' => 'required|string|in:dia,hora',
             'costo_total' => 'required|numeric|min:0',
         ]);
 
-        // Obtener los datos del cliente y vehículo para almacenar en el documento de arriendo.
-        $cliente = \App\Models\Cliente::find($request->id_cliente); //Cuidado con los namespaces
+        $cliente = \App\Models\Cliente::find($request->id_cliente);
         $vehiculo = \App\Models\Vehiculo::find($request->id_vehiculo);
 
         if (!$cliente || !$vehiculo) {
@@ -53,8 +52,8 @@ class ArriendoController extends Controller
         $arriendoData = $request->all();
         $arriendoData['cliente'] = [
             'id' => $cliente->id,
-            'nombre' => $cliente->nombres . ' ' . $cliente->apellidos, // Ajusta según tus campos de nombre
-            'correo' => $cliente->email, // Ajusta según tu campo de correo
+            'nombre' => $cliente->nombres . ' ' . $cliente->apellidos,
+            'correo' => $cliente->email,
         ];
         $arriendoData['vehiculo'] = [
             'id' => $vehiculo->id,
@@ -81,9 +80,9 @@ class ArriendoController extends Controller
      */
     public function edit(Arriendo $arriendo)
     {
-        $clientes = \App\Models\Cliente::all()->toArray();
-        $vehiculos = \App\Models\Vehiculo::all()->toArray();
-        return view('arriendos.edit', compact('arriendo','clientes','vehiculos'));
+        $clientes = \App\Models\Cliente::all();
+        $vehiculos = \App\Models\Vehiculo::all();
+        return view('arriendos.edit', compact('arriendo', 'clientes', 'vehiculos'));
     }
 
     /**
@@ -93,15 +92,15 @@ class ArriendoController extends Controller
     {
         $request->validate([
             'id_arriendo' => 'required|integer|unique:arriendos,id_arriendo,' . $arriendo->id . ',_id',
-            'id_cliente' => 'required|integer',
-            'id_vehiculo' => 'required|integer',
+            'id_cliente' => 'required|string',
+            'id_vehiculo' => 'required|string',
             'fecha_inicio' => 'required|date|before:fecha_fin',
             'fecha_fin' => 'required|date|after:fecha_inicio',
             'modalidad' => 'required|string|in:dia,hora',
             'costo_total' => 'required|numeric|min:0',
         ]);
-        // Obtener los datos del cliente y vehículo para almacenar en el documento de arriendo.
-        $cliente = \App\Models\Cliente::find($request->id_cliente); //Cuidado con los namespaces
+
+        $cliente = \App\Models\Cliente::find($request->id_cliente);
         $vehiculo = \App\Models\Vehiculo::find($request->id_vehiculo);
 
         if (!$cliente || !$vehiculo) {
@@ -111,8 +110,8 @@ class ArriendoController extends Controller
         $arriendoData = $request->all();
         $arriendoData['cliente'] = [
             'id' => $cliente->id,
-            'nombre' => $cliente->nombres . ' ' . $cliente->apellidos, // Ajusta según tus campos de nombre
-            'correo' => $cliente->email, // Ajusta según tu campo de correo
+            'nombre' => $cliente->nombres . ' ' . $cliente->apellidos,
+            'correo' => $cliente->email,
         ];
         $arriendoData['vehiculo'] = [
             'id' => $vehiculo->id,
@@ -134,4 +133,33 @@ class ArriendoController extends Controller
         $arriendo->delete();
         return redirect()->route('arriendos.index')->with('success', 'Arriendo eliminado exitosamente.');
     }
+
+    public function buscar(Request $request)
+    {
+        $request->validate([
+            'id_arriendo' => 'sometimes|integer',
+            'nombre_cliente' => 'sometimes|string',
+        ]);
+
+        $arriendos = Arriendo::query();
+
+        if ($request->has('id_arriendo')) {
+            $arriendos->where('id_arriendo', $request->id_arriendo);
+        }
+
+        if ($request->has('nombre_cliente')) {
+            $nombre_cliente = $request->nombre_cliente;
+            $arriendos->where('cliente.nombre', 'REGEXP', new \MongoDB\BSON\Regex($nombre_cliente, 'i'));
+        }
+
+        $arriendos = $arriendos->get();
+
+
+        if ($arriendos->isEmpty()) {
+            return view('arriendos.index')->with('error', 'No se encontraron arriendos con los criterios proporcionados.');
+        }
+
+        return view('arriendos.index', compact('arriendos'));
+    }
 }
+
